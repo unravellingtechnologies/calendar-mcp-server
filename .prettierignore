@@ -1,0 +1,17 @@
+# Build outputs
+dist/
+node_modules/
+
+# Logs
+*.log
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+
+# Config files that should maintain specific formatting
+.prettierrc
+.prettierignore
+
+# Generated files
+coverage/

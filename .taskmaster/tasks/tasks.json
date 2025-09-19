@@ -1,0 +1,858 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Project Setup and TypeScript Configuration",
+        "description": "Initialize the project repository with TypeScript configuration, build system, and required dependencies for MCP server development.",
+        "details": "1. Create a new repository for the Calendar MCP Server\n2. Initialize npm project with `npm init -y`\n3. Install TypeScript and required dependencies:\n   - TypeScript v5.0+ (`npm install typescript --save-dev`)\n   - Node.js types (`npm install @types/node --save-dev`)\n   - ts-node for development (`npm install ts-node --save-dev`)\n   - ESLint for code quality (`npm install eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin --save-dev`)\n4. Configure TypeScript (tsconfig.json):\n```json\n{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"esModuleInterop\": true,\n    \"strict\": true,\n    \"outDir\": \"./dist\",\n    \"declaration\": true,\n    \"sourceMap\": true,\n    \"rootDir\": \"./src\"\n  },\n  \"include\": [\"src/**/*\"],\n  \"exclude\": [\"node_modules\", \"dist\"]\n}\n```\n5. Setup build scripts in package.json:\n```json\n{\n  \"scripts\": {\n    \"build\": \"tsc\",\n    \"dev\": \"ts-node src/index.ts\",\n    \"lint\": \"eslint . --ext .ts\",\n    \"test\": \"jest\"\n  }\n}\n```\n6. Create basic folder structure:\n   - src/ (source code)\n   - tests/ (test files)\n   - dist/ (compiled output)\n7. Install MCP dependencies:\n   - Model Context Protocol library (`npm install @modelcontextprotocol/core`)\n8. Configure Jest for testing:\n   - Install Jest (`npm install jest ts-jest @types/jest --save-dev`)\n   - Create jest.config.js\n9. Create .gitignore file with appropriate entries for Node.js/TypeScript projects",
+        "testStrategy": "1. Verify that TypeScript compilation works with `npm run build`\n2. Ensure all dependencies are correctly installed and resolvable\n3. Validate tsconfig.json settings by creating a simple TypeScript file\n4. Confirm ESLint configuration works with `npm run lint`\n5. Test the project structure by creating placeholder files in each directory",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Project Repository",
+            "description": "Create a new repository and initialize the npm project for the Calendar MCP Server.",
+            "dependencies": [],
+            "details": "Create a new Git repository, initialize npm project with 'npm init -y', and set up basic folder structure including src/, tests/, and dist/ directories.",
+            "status": "done",
+            "testStrategy": "Verify repository creation, check npm initialization, and confirm folder structure existence."
+          },
+          {
+            "id": 2,
+            "title": "Install and Configure TypeScript",
+            "description": "Install TypeScript and related dependencies, and set up TypeScript configuration.",
+            "dependencies": [],
+            "details": "Install TypeScript v5.0+, Node.js types, ts-node, and ESLint. Create and configure tsconfig.json with appropriate compiler options.",
+            "status": "done",
+            "testStrategy": "Validate TypeScript installation, verify tsconfig.json settings, and ensure successful TypeScript compilation."
+          },
+          {
+            "id": 3,
+            "title": "Set Up Build and Development Scripts",
+            "description": "Configure package.json with necessary scripts for building, development, and linting.",
+            "dependencies": [],
+            "details": "Add scripts to package.json for building (tsc), development (ts-node), and linting (eslint). Include a placeholder for testing (jest).",
+            "status": "done",
+            "testStrategy": "Test each script to ensure they execute without errors and perform their intended functions."
+          },
+          {
+            "id": 4,
+            "title": "Install MCP Dependencies",
+            "description": "Install the Model Context Protocol library and other required dependencies.",
+            "dependencies": [],
+            "details": "Install @modelcontextprotocol/core library. Set up any additional dependencies required for MCP server development.\n<info added on 2025-09-19T07:39:55.811Z>\nResearch findings: The @modelcontextprotocol/core package doesn't appear to exist on npm. After examining the reference implementation at https://github.com/modelcontextprotocol/servers/tree/main/src/everything, it seems the MCP server implementation uses a different approach.\n\nInstead of using a pre-packaged SDK, we should:\n1. Clone the reference repository for guidance\n2. Implement the MCP protocol directly based on the reference implementation\n3. Focus on the protocol specification rather than looking for a non-existent package\n4. Consider implementing the server components from scratch following the protocol documentation\n5. Examine how the reference implementation handles request/response formats, authentication, and tool registration\n\nWe'll need to revise our implementation approach to build the core MCP server functionality without relying on an external package.\n</info added on 2025-09-19T07:39:55.811Z>\n<info added on 2025-09-19T07:41:23.373Z>\n<info added on 2025-09-20T14:22:10.456Z>\nUPDATE: Successfully identified and installed the correct MCP SDK package.\n\nThe official MCP TypeScript SDK has been installed:\n- Package: @modelcontextprotocol/sdk@1.18.1\n- Source: https://github.com/modelcontextprotocol/typescript-sdk\n- This is the official TypeScript SDK for implementing Model Context Protocol servers and clients\n\nThe SDK provides comprehensive functionality:\n- Server implementation classes (McpServer)\n- Client implementation classes (Client)\n- Transport options (Stdio, HTTP, SSE, StreamableHTTP)\n- Tool, resource, and prompt handling capabilities\n- Authentication support\n- Full TypeScript type definitions\n\nThis package replaces our previous approach of implementing from scratch. We can now leverage the official SDK to build our Calendar MCP Server implementation, which will significantly streamline development.\n</info added on 2025-09-20T14:22:10.456Z>\n</info added on 2025-09-19T07:41:23.373Z>",
+            "status": "done",
+            "testStrategy": "Verify successful installation of MCP library and its resolution in the project."
+          },
+          {
+            "id": 5,
+            "title": "Configure Testing Environment",
+            "description": "Set up Jest for testing and create initial configuration.",
+            "dependencies": [],
+            "details": "Install Jest, ts-jest, and @types/jest. Create jest.config.js with appropriate settings for TypeScript testing.",
+            "status": "done",
+            "testStrategy": "Run a sample test to ensure Jest is correctly configured and can execute TypeScript tests."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "MCP Server Core Implementation",
+        "description": "Implement the core MCP server framework that will handle communication with Claude Desktop and other MCP-compatible clients.",
+        "details": "1. Create the MCP server core module in `src/server/index.ts`\n2. Implement the server using the latest MCP protocol (v0.1.0 as of 2023):\n```typescript\nimport { MCPServer } from '@modelcontextprotocol/core';\nimport { logger } from '../utils/logger';\n\nexport class CalendarMCPServer {\n  private server: MCPServer;\n  private port: number;\n\n  constructor(port: number = 8080) {\n    this.port = port;\n    this.server = new MCPServer({\n      name: 'Calendar MCP Server',\n      version: '0.1.0',\n    });\n  }\n\n  public async start(): Promise<void> {\n    try {\n      await this.server.listen(this.port);\n      logger.info(`MCP Server started on port ${this.port}`);\n    } catch (error) {\n      logger.error('Failed to start MCP server:', error);\n      throw error;\n    }\n  }\n\n  public async stop(): Promise<void> {\n    try {\n      await this.server.close();\n      logger.info('MCP Server stopped');\n    } catch (error) {\n      logger.error('Failed to stop MCP server:', error);\n      throw error;\n    }\n  }\n\n  public registerTool(tool: any): void {\n    this.server.registerTool(tool);\n    logger.info(`Registered tool: ${tool.name}`);\n  }\n}\n```\n3. Create a basic logger utility in `src/utils/logger.ts`\n4. Implement server configuration handling to allow customization of port and other settings\n5. Create main entry point in `src/index.ts` that initializes and starts the server\n6. Implement proper shutdown handling for graceful termination\n7. Add basic health check endpoint for monitoring\n8. Implement error handling middleware for the MCP server",
+        "testStrategy": "1. Unit tests for server initialization, start, and stop methods\n2. Test server configuration with different port settings\n3. Verify proper error handling when server fails to start\n4. Test graceful shutdown functionality\n5. Mock MCP client requests to verify basic server response\n6. Test health check endpoint functionality",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement MCP Server Core Module",
+            "description": "Create the core MCP server module in src/server/index.ts with basic functionality",
+            "dependencies": [],
+            "details": "Implement the CalendarMCPServer class with constructor, start, stop, and registerTool methods. Use the @modelcontextprotocol/core package and implement error handling.",
+            "status": "in-progress",
+            "testStrategy": "Write unit tests for server initialization, start, stop, and tool registration methods. Test error handling scenarios."
+          },
+          {
+            "id": 2,
+            "title": "Create Logger Utility",
+            "description": "Implement a basic logger utility in src/utils/logger.ts",
+            "dependencies": [],
+            "details": "Create a logger utility using a logging library like winston or pino. Implement different log levels (info, error, debug) and log formatting.",
+            "status": "done",
+            "testStrategy": "Test logger initialization, different log levels, and log output formatting."
+          },
+          {
+            "id": 3,
+            "title": "Implement Server Configuration Handling",
+            "description": "Create a configuration module to handle server settings like port and other customizable options",
+            "dependencies": [
+              "2.1",
+              "2.2"
+            ],
+            "details": "Implement a configuration module that loads settings from environment variables or a config file. Include options for port, log level, and other server-specific settings.",
+            "status": "pending",
+            "testStrategy": "Test configuration loading from different sources (env vars, config file) and validate default values."
+          },
+          {
+            "id": 4,
+            "title": "Create Main Entry Point",
+            "description": "Implement the main entry point in src/index.ts to initialize and start the MCP server",
+            "dependencies": [
+              "2.1",
+              "2.2",
+              "2.3"
+            ],
+            "details": "Create the main application entry point that initializes the CalendarMCPServer, loads configuration, and starts the server. Implement proper error handling and logging.",
+            "status": "pending",
+            "testStrategy": "Test the main entry point for successful server startup and proper error handling for various scenarios."
+          },
+          {
+            "id": 5,
+            "title": "Implement Graceful Shutdown and Health Check",
+            "description": "Add graceful shutdown handling and a basic health check endpoint",
+            "dependencies": [
+              "2.1",
+              "2.2",
+              "2.3",
+              "2.4"
+            ],
+            "details": "Implement proper shutdown handling for graceful termination, including closing server connections and cleaning up resources. Add a basic health check endpoint for monitoring server status.",
+            "status": "pending",
+            "testStrategy": "Test graceful shutdown functionality and verify the health check endpoint returns correct status information."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "EventKit Native Bridge Implementation",
+        "description": "Create native Node.js bindings to the macOS EventKit framework to access Apple Calendar data.",
+        "details": "1. Research existing Node.js bindings for EventKit or create a new native module\n2. For a new native module, use N-API (Node-API) for stability across Node.js versions:\n   - Create `src/native/eventkit-bridge.cpp` for C++ implementation\n   - Use node-gyp for building native modules\n3. Alternatively, use node-addon-api for a more modern C++ wrapper:\n```bash\nnpm install node-addon-api bindings --save\nnpm install node-gyp --save-dev\n```\n4. Create binding.gyp configuration:\n```json\n{\n  \"targets\": [{\n    \"target_name\": \"eventkit_bridge\",\n    \"sources\": [ \"src/native/eventkit-bridge.mm\" ],\n    \"include_dirs\": [\n      \"<!@(node -p \\\"require('node-addon-api').include\\\")\"\n    ],\n    \"dependencies\": [\n      \"<!(node -p \\\"require('node-addon-api').gyp\\\")\"\n    ],\n    \"cflags!\": [ \"-fno-exceptions\" ],\n    \"cflags_cc!\": [ \"-fno-exceptions\" ],\n    \"xcode_settings\": {\n      \"GCC_ENABLE_CPP_EXCEPTIONS\": \"YES\",\n      \"CLANG_CXX_LIBRARY\": \"libc++\",\n      \"OTHER_CFLAGS\": [ \"-ObjC++\" ],\n      \"OTHER_LDFLAGS\": [\n        \"-framework EventKit\",\n        \"-framework Foundation\"\n      ]\n    }\n  }]\n}\n```\n5. Implement TypeScript wrapper in `src/eventkit/index.ts` to provide a clean API over the native module:\n```typescript\nimport { EventKitBridge } from '../native/eventkit-bridge';\n\nexport class EventKitService {\n  private bridge: any;\n\n  constructor() {\n    try {\n      this.bridge = require('../../build/Release/eventkit_bridge.node');\n    } catch (error) {\n      throw new Error(`Failed to load EventKit native module: ${error.message}`);\n    }\n  }\n\n  async requestCalendarAccess(): Promise<boolean> {\n    return this.bridge.requestCalendarAccess();\n  }\n\n  async getCalendars(): Promise<any[]> {\n    return this.bridge.getCalendars();\n  }\n\n  async getEvents(startDate: Date, endDate: Date, calendarIds?: string[]): Promise<any[]> {\n    return this.bridge.getEvents(startDate.toISOString(), endDate.toISOString(), calendarIds);\n  }\n\n  async createEvent(eventData: any): Promise<any> {\n    return this.bridge.createEvent(JSON.stringify(eventData));\n  }\n}\n```\n6. Implement permission handling for calendar access\n7. Create data mapping between EventKit objects and JavaScript objects\n8. Implement error handling for native module calls",
+        "testStrategy": "1. Create mock implementation for testing on non-macOS platforms\n2. Unit tests for the TypeScript wrapper with mocked native module\n3. Integration tests on macOS to verify actual EventKit functionality\n4. Test permission request flow and handling of denied permissions\n5. Verify data mapping between EventKit and JavaScript objects\n6. Test error handling when EventKit operations fail",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set up native module structure",
+            "description": "Create the basic structure for the native Node.js module using N-API or node-addon-api.",
+            "dependencies": [],
+            "details": "Create src/native directory, initialize package.json for native module, install necessary dependencies (node-addon-api, node-gyp), and set up initial C++ files.",
+            "status": "pending",
+            "testStrategy": "Verify correct file structure and successful build of an empty native module."
+          },
+          {
+            "id": 2,
+            "title": "Implement core EventKit bindings",
+            "description": "Create C++ bindings for essential EventKit functions like requesting calendar access and fetching calendars.",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "Implement C++ functions that interface with EventKit framework, including requestCalendarAccess and getCalendars. Use Objective-C++ (.mm) files for EventKit integration.",
+            "status": "pending",
+            "testStrategy": "Unit test the C++ functions with mock EventKit responses, ensure proper memory management."
+          },
+          {
+            "id": 3,
+            "title": "Develop TypeScript wrapper",
+            "description": "Create a TypeScript class to provide a clean API over the native module.",
+            "dependencies": [
+              "3.1",
+              "3.2"
+            ],
+            "details": "Implement src/eventkit/index.ts with EventKitService class, wrapping native module functions and handling errors.",
+            "status": "pending",
+            "testStrategy": "Write unit tests for the TypeScript wrapper, mocking the underlying native module calls."
+          },
+          {
+            "id": 4,
+            "title": "Implement event operations",
+            "description": "Add functions for fetching, creating, and modifying calendar events.",
+            "dependencies": [
+              "3.2",
+              "3.3"
+            ],
+            "details": "Extend both C++ bindings and TypeScript wrapper to include getEvents, createEvent, updateEvent, and deleteEvent functions.",
+            "status": "pending",
+            "testStrategy": "Create integration tests that verify event operations on a test calendar."
+          },
+          {
+            "id": 5,
+            "title": "Add error handling and permissions management",
+            "description": "Implement robust error handling and manage calendar access permissions.",
+            "dependencies": [
+              "3.2",
+              "3.3",
+              "3.4"
+            ],
+            "details": "Add error checking in C++ code, propagate errors to JavaScript, implement permission request flow, and handle denied permissions gracefully.",
+            "status": "pending",
+            "testStrategy": "Test various error scenarios, including permission denied, invalid input, and EventKit errors. Verify proper error propagation to JavaScript."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Data Models Implementation",
+        "description": "Define and implement TypeScript interfaces and classes for calendar data models including Event, Calendar, Recurrence, and Attendee.",
+        "details": "1. Create a models directory `src/models/` to house all data model definitions\n2. Implement Event model in `src/models/event.ts`:\n```typescript\nexport interface Attendee {\n  name: string;\n  email: string;\n  status: 'pending' | 'accepted' | 'declined';\n}\n\nexport interface RecurrenceRule {\n  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';\n  interval: number;\n  endDate?: Date;\n  occurrences?: number;\n}\n\nexport interface CalendarEvent {\n  id?: string;\n  title: string;\n  description?: string;\n  startDate: Date;\n  endDate: Date;\n  isAllDay: boolean;\n  location?: string;\n  attendees?: Attendee[];\n  calendarId: string;\n  recurrenceRule?: RecurrenceRule;\n  url?: string;\n  notes?: string;\n  createdAt?: Date;\n  updatedAt?: Date;\n}\n```\n3. Implement Calendar model in `src/models/calendar.ts`:\n```typescript\nexport interface Calendar {\n  id: string;\n  title: string;\n  color?: string;\n  type: 'local' | 'subscribed' | 'caldav' | 'exchange';\n  isVisible: boolean;\n  allowsModifications: boolean;\n}\n```\n4. Create serialization/deserialization utilities in `src/utils/serialization.ts` to convert between EventKit objects and our data models\n5. Implement validation functions for each model to ensure data integrity\n6. Create mapper functions to convert between MCP tool parameters and our data models\n7. Add documentation for each model using JSDoc comments",
+        "testStrategy": "1. Unit tests for each data model to verify structure and validation\n2. Test serialization/deserialization utilities with sample data\n3. Verify mapper functions correctly transform data between formats\n4. Test validation functions with valid and invalid data\n5. Ensure proper type checking with TypeScript compiler",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Event Model",
+            "description": "Create and implement the Event model with all required properties and interfaces.",
+            "dependencies": [],
+            "details": "Create `src/models/event.ts` file. Implement Attendee, RecurrenceRule, and CalendarEvent interfaces as specified in the current details. Add JSDoc comments for documentation.",
+            "status": "pending",
+            "testStrategy": "Write unit tests to verify the structure of the Event model. Test with sample data to ensure all properties are correctly defined."
+          },
+          {
+            "id": 2,
+            "title": "Implement Calendar Model",
+            "description": "Create and implement the Calendar model with all required properties.",
+            "dependencies": [],
+            "details": "Create `src/models/calendar.ts` file. Implement the Calendar interface as specified in the current details. Add JSDoc comments for documentation.",
+            "status": "pending",
+            "testStrategy": "Write unit tests to verify the structure of the Calendar model. Test with sample data to ensure all properties are correctly defined."
+          },
+          {
+            "id": 3,
+            "title": "Create Serialization Utilities",
+            "description": "Implement serialization and deserialization utilities for converting between EventKit objects and our data models.",
+            "dependencies": [
+              "4.1",
+              "4.2"
+            ],
+            "details": "Create `src/utils/serialization.ts` file. Implement functions to convert EventKit objects to our Event and Calendar models, and vice versa. Ensure proper handling of all properties.",
+            "status": "pending",
+            "testStrategy": "Write unit tests for serialization and deserialization functions. Use sample EventKit objects and verify correct conversion to our models and back."
+          },
+          {
+            "id": 4,
+            "title": "Implement Validation Functions",
+            "description": "Create validation functions for each model to ensure data integrity.",
+            "dependencies": [
+              "4.1",
+              "4.2"
+            ],
+            "details": "Create `src/utils/validation.ts` file. Implement validation functions for Event and Calendar models. Check for required fields, correct data types, and any specific constraints.",
+            "status": "pending",
+            "testStrategy": "Write unit tests for validation functions. Test with valid and invalid data to ensure correct validation results."
+          },
+          {
+            "id": 5,
+            "title": "Create Mapper Functions",
+            "description": "Implement mapper functions to convert between MCP tool parameters and our data models.",
+            "dependencies": [
+              "4.1",
+              "4.2",
+              "4.3",
+              "4.4"
+            ],
+            "details": "Create `src/utils/mappers.ts` file. Implement functions to map MCP tool parameters to our Event and Calendar models, and vice versa. Ensure proper handling of all properties and data transformations.",
+            "status": "pending",
+            "testStrategy": "Write unit tests for mapper functions. Use sample MCP tool parameters and verify correct conversion to our models and back."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "MCP Tool Registration System",
+        "description": "Implement the tool registry system that defines and registers MCP tools for calendar operations.",
+        "details": "1. Create a tools directory `src/tools/` to organize MCP tool implementations\n2. Implement a base tool registration system in `src/tools/registry.ts`:\n```typescript\nimport { MCPTool } from '@modelcontextprotocol/core';\nimport { CalendarMCPServer } from '../server';\nimport { logger } from '../utils/logger';\n\nexport class ToolRegistry {\n  private server: CalendarMCPServer;\n  private tools: MCPTool[] = [];\n\n  constructor(server: CalendarMCPServer) {\n    this.server = server;\n  }\n\n  public registerTool(tool: MCPTool): void {\n    this.tools.push(tool);\n    this.server.registerTool(tool);\n    logger.info(`Registered tool: ${tool.name}`);\n  }\n\n  public registerAllTools(): void {\n    // Import and register all tools\n    const getEventsTools = require('./get-events').default;\n    const createEventTool = require('./create-event').default;\n    // Add more tools as they are implemented\n    \n    this.registerTool(getEventsTools);\n    this.registerTool(createEventTool);\n    \n    logger.info(`Registered ${this.tools.length} tools`);\n  }\n}\n```\n3. Define a common tool interface structure in `src/tools/base-tool.ts`\n4. Create a tool factory to simplify creation of new tools\n5. Implement tool parameter validation using JSON Schema\n6. Add error handling for tool registration and execution\n7. Create a mechanism to dynamically load tools based on configuration\n8. Implement tool documentation generation for Claude Desktop",
+        "testStrategy": "1. Unit tests for tool registry functionality\n2. Verify tool registration with mock server\n3. Test parameter validation with valid and invalid inputs\n4. Ensure proper error handling when tools fail to register\n5. Test dynamic tool loading from configuration\n6. Verify tool documentation generation",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Tool Factory",
+            "description": "Create a tool factory to simplify the creation of new MCP tools",
+            "dependencies": [],
+            "details": "Design and implement a ToolFactory class in src/tools/tool-factory.ts that provides methods for creating different types of MCP tools. Include factory methods for common tool types and a generic create method for custom tools.",
+            "status": "pending",
+            "testStrategy": "Write unit tests to verify the ToolFactory can create various tool types correctly. Test with both predefined and custom tool configurations."
+          },
+          {
+            "id": 2,
+            "title": "Implement Tool Parameter Validation",
+            "description": "Add JSON Schema-based validation for tool parameters",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "Integrate JSON Schema validation into the tool registration process. Create a validateToolParameters function in src/tools/validation.ts that uses ajv or a similar library to validate tool parameters against their respective schemas.",
+            "status": "pending",
+            "testStrategy": "Create unit tests with valid and invalid parameter sets for different tool types. Ensure proper error handling and reporting for validation failures."
+          },
+          {
+            "id": 3,
+            "title": "Enhance Error Handling",
+            "description": "Improve error handling for tool registration and execution",
+            "dependencies": [
+              "5.1",
+              "5.2"
+            ],
+            "details": "Implement a custom error class ToolError in src/tools/errors.ts. Update the ToolRegistry and individual tool implementations to use this error class for consistent error handling and reporting.",
+            "status": "pending",
+            "testStrategy": "Write tests that simulate various error conditions during tool registration and execution. Verify that errors are caught, logged, and reported correctly."
+          },
+          {
+            "id": 4,
+            "title": "Implement Dynamic Tool Loading",
+            "description": "Create a mechanism to dynamically load tools based on configuration",
+            "dependencies": [
+              "5.1",
+              "5.2",
+              "5.3"
+            ],
+            "details": "Develop a configuration-driven tool loading system in src/tools/loader.ts. This should read from a config file or environment variables to determine which tools to load, and use dynamic imports to load the specified tools.",
+            "status": "pending",
+            "testStrategy": "Test the dynamic loading mechanism with various configuration scenarios. Verify that tools are loaded correctly and that the system handles missing or invalid tool specifications gracefully."
+          },
+          {
+            "id": 5,
+            "title": "Generate Tool Documentation",
+            "description": "Implement automatic tool documentation generation for Claude Desktop",
+            "dependencies": [
+              "5.1",
+              "5.2",
+              "5.3",
+              "5.4"
+            ],
+            "details": "Create a documentation generator in src/tools/docs-generator.ts that extracts information from registered tools and generates formatted documentation suitable for Claude Desktop. Include details such as tool name, description, parameters, and usage examples.",
+            "status": "pending",
+            "testStrategy": "Verify the documentation generator produces accurate and well-formatted documentation for all registered tools. Test with a variety of tool types and configurations to ensure comprehensive coverage."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Event Reading Tool Implementation",
+        "description": "Implement the MCP tool for reading and fetching calendar events from Apple Calendar.",
+        "details": "1. Create `src/tools/get-events.ts` to implement the event reading tool:\n```typescript\nimport { MCPTool, MCPRequest, MCPResponse } from '@modelcontextprotocol/core';\nimport { EventKitService } from '../eventkit';\nimport { logger } from '../utils/logger';\n\nconst eventKitService = new EventKitService();\n\nconst getEventsSchema = {\n  type: 'object',\n  properties: {\n    startDate: { type: 'string', format: 'date-time' },\n    endDate: { type: 'string', format: 'date-time' },\n    calendarIds: { type: 'array', items: { type: 'string' }, optional: true },\n    limit: { type: 'number', optional: true }\n  },\n  required: ['startDate', 'endDate']\n};\n\nconst getEventsTool: MCPTool = {\n  name: 'get_events',\n  description: 'Fetch calendar events within a specified date range',\n  schema: getEventsSchema,\n  execute: async (request: MCPRequest): Promise<MCPResponse> => {\n    try {\n      const { startDate, endDate, calendarIds, limit } = request.params;\n      \n      // Parse dates from ISO strings\n      const start = new Date(startDate);\n      const end = new Date(endDate);\n      \n      // Validate date range\n      if (start > end) {\n        return {\n          status: 'error',\n          error: 'Start date must be before end date'\n        };\n      }\n      \n      // Get events from EventKit\n      const events = await eventKitService.getEvents(start, end, calendarIds);\n      \n      // Apply limit if specified\n      const limitedEvents = limit ? events.slice(0, limit) : events;\n      \n      return {\n        status: 'success',\n        result: limitedEvents\n      };\n    } catch (error) {\n      logger.error('Error fetching events:', error);\n      return {\n        status: 'error',\n        error: `Failed to fetch events: ${error.message}`\n      };\n    }\n  }\n};\n\nexport default getEventsTool;\n```\n2. Implement filtering capabilities for events by calendar, title, or other properties\n3. Add pagination support for large result sets\n4. Implement sorting options (by date, title, etc.)\n5. Create utility functions for date range handling\n6. Add caching mechanism for frequently accessed events\n7. Implement proper error handling for EventKit errors",
+        "testStrategy": "1. Unit tests with mocked EventKit service\n2. Test date range validation\n3. Verify filtering functionality with sample data\n4. Test pagination with large result sets\n5. Verify sorting options work correctly\n6. Test error handling with simulated EventKit failures\n7. Integration tests with actual EventKit on macOS",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement event filtering",
+            "description": "Add filtering capabilities for events by calendar, title, or other properties",
+            "dependencies": [],
+            "details": "Extend the getEventsTool to include filtering options in the request schema. Implement filter logic in the execute function to filter events based on specified criteria.",
+            "status": "pending",
+            "testStrategy": "Create unit tests with sample events to verify filtering by various properties. Test edge cases and combinations of filters."
+          },
+          {
+            "id": 2,
+            "title": "Add pagination support",
+            "description": "Implement pagination for large result sets in the event reading tool",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "Modify the getEventsSchema to include pagination parameters (page, pageSize). Update the execute function to apply pagination to the filtered results.",
+            "status": "pending",
+            "testStrategy": "Test pagination with large datasets, verifying correct page sizes and content. Check edge cases like last page and empty results."
+          },
+          {
+            "id": 3,
+            "title": "Implement sorting options",
+            "description": "Add sorting capabilities for events by date, title, or other relevant properties",
+            "dependencies": [
+              "6.1",
+              "6.2"
+            ],
+            "details": "Extend the getEventsSchema to include sorting options. Implement sorting logic in the execute function to sort the filtered and paginated results.",
+            "status": "pending",
+            "testStrategy": "Create tests for various sorting options, verifying correct order. Test with different data types and edge cases like null values."
+          },
+          {
+            "id": 4,
+            "title": "Create date range utility functions",
+            "description": "Implement utility functions for handling date ranges in event queries",
+            "dependencies": [],
+            "details": "Create a new file src/utils/dateUtils.ts. Implement functions for validating, manipulating, and comparing date ranges used in event queries.",
+            "status": "pending",
+            "testStrategy": "Develop comprehensive unit tests for each date utility function, covering various scenarios and edge cases."
+          },
+          {
+            "id": 5,
+            "title": "Implement caching mechanism",
+            "description": "Add a caching system for frequently accessed events to improve performance",
+            "dependencies": [
+              "6.1",
+              "6.2",
+              "6.3",
+              "6.4"
+            ],
+            "details": "Design and implement a caching strategy for event data. Consider using a library like node-cache. Integrate cache checks and updates in the getEventsTool execute function.",
+            "status": "pending",
+            "testStrategy": "Test cache hit and miss scenarios. Verify cache invalidation and update mechanisms. Measure performance improvements with and without caching."
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Event Creation Tool Implementation",
+        "description": "Implement the MCP tool for creating new calendar events in Apple Calendar.",
+        "details": "1. Create `src/tools/create-event.ts` to implement the event creation tool:\n```typescript\nimport { MCPTool, MCPRequest, MCPResponse } from '@modelcontextprotocol/core';\nimport { EventKitService } from '../eventkit';\nimport { validateEvent } from '../utils/validation';\nimport { logger } from '../utils/logger';\n\nconst eventKitService = new EventKitService();\n\nconst createEventSchema = {\n  type: 'object',\n  properties: {\n    title: { type: 'string' },\n    description: { type: 'string', optional: true },\n    startDate: { type: 'string', format: 'date-time' },\n    endDate: { type: 'string', format: 'date-time' },\n    isAllDay: { type: 'boolean', optional: true },\n    location: { type: 'string', optional: true },\n    calendarId: { type: 'string' },\n    attendees: {\n      type: 'array',\n      items: {\n        type: 'object',\n        properties: {\n          name: { type: 'string' },\n          email: { type: 'string' }\n        },\n        required: ['email']\n      },\n      optional: true\n    },\n    recurrence: {\n      type: 'object',\n      properties: {\n        frequency: { type: 'string', enum: ['daily', 'weekly', 'monthly', 'yearly'] },\n        interval: { type: 'number' },\n        endDate: { type: 'string', format: 'date-time', optional: true },\n        occurrences: { type: 'number', optional: true }\n      },\n      required: ['frequency', 'interval'],\n      optional: true\n    }\n  },\n  required: ['title', 'startDate', 'endDate', 'calendarId']\n};\n\nconst createEventTool: MCPTool = {\n  name: 'create_event',\n  description: 'Create a new calendar event',\n  schema: createEventSchema,\n  execute: async (request: MCPRequest): Promise<MCPResponse> => {\n    try {\n      const eventData = request.params;\n      \n      // Parse dates from ISO strings\n      eventData.startDate = new Date(eventData.startDate);\n      eventData.endDate = new Date(eventData.endDate);\n      if (eventData.recurrence?.endDate) {\n        eventData.recurrence.endDate = new Date(eventData.recurrence.endDate);\n      }\n      \n      // Validate event data\n      const validationResult = validateEvent(eventData);\n      if (!validationResult.valid) {\n        return {\n          status: 'error',\n          error: `Invalid event data: ${validationResult.errors.join(', ')}`\n        };\n      }\n      \n      // Create event in EventKit\n      const createdEvent = await eventKitService.createEvent(eventData);\n      \n      return {\n        status: 'success',\n        result: createdEvent\n      };\n    } catch (error) {\n      logger.error('Error creating event:', error);\n      return {\n        status: 'error',\n        error: `Failed to create event: ${error.message}`\n      };\n    }\n  }\n};\n\nexport default createEventTool;\n```\n2. Implement validation utility in `src/utils/validation.ts`\n3. Add support for recurring events with various recurrence patterns\n4. Implement attendee invitation handling\n5. Add calendar availability checking before event creation\n6. Implement conflict detection with existing events\n7. Add support for creating events in different calendars",
+        "testStrategy": "1. Unit tests with mocked EventKit service\n2. Test validation with valid and invalid event data\n3. Verify recurrence pattern handling\n4. Test attendee invitation functionality\n5. Verify conflict detection with overlapping events\n6. Test calendar availability checking\n7. Integration tests with actual EventKit on macOS",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement event creation logic",
+            "description": "Create the core functionality for creating new calendar events using EventKit",
+            "dependencies": [],
+            "details": "Implement the createEvent function in EventKitService class, handling all required event properties including title, description, start/end dates, location, and attendees",
+            "status": "pending",
+            "testStrategy": "Unit test the createEvent function with various event data scenarios"
+          },
+          {
+            "id": 2,
+            "title": "Add support for recurring events",
+            "description": "Implement functionality to handle recurring event patterns",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Extend the createEvent function to support recurrence rules, including frequency, interval, end date, and number of occurrences",
+            "status": "pending",
+            "testStrategy": "Test creation of events with different recurrence patterns and verify correct storage in EventKit"
+          },
+          {
+            "id": 3,
+            "title": "Implement attendee invitation handling",
+            "description": "Add functionality to manage attendee invitations for created events",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Extend the createEvent function to handle attendee invitations, including sending out invites and managing responses",
+            "status": "pending",
+            "testStrategy": "Test attendee invitation process with mock email service"
+          },
+          {
+            "id": 4,
+            "title": "Implement calendar availability checking",
+            "description": "Add a function to check calendar availability before event creation",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Create a checkAvailability function in EventKitService to verify if the selected time slot is available in the chosen calendar",
+            "status": "pending",
+            "testStrategy": "Test availability checking with various scenarios of free and occupied time slots"
+          },
+          {
+            "id": 5,
+            "title": "Implement conflict detection",
+            "description": "Add functionality to detect conflicts with existing events",
+            "dependencies": [
+              "7.1",
+              "7.4"
+            ],
+            "details": "Extend the checkAvailability function to detect and report conflicts with existing events in the calendar",
+            "status": "pending",
+            "testStrategy": "Test conflict detection with overlapping events and verify correct conflict reporting"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Error Handling and Logging System",
+        "description": "Implement comprehensive error handling and logging system for the MCP server and EventKit operations.",
+        "details": "1. Create a robust logging utility in `src/utils/logger.ts`:\n```typescript\nimport * as winston from 'winston';\nimport * as path from 'path';\nimport * as os from 'os';\n\n// Define log directory - use user's home directory for logs\nconst logDir = path.join(os.homedir(), '.calendar-mcp-server', 'logs');\n\n// Create logger instance\nexport const logger = winston.createLogger({\n  level: process.env.LOG_LEVEL || 'info',\n  format: winston.format.combine(\n    winston.format.timestamp(),\n    winston.format.json()\n  ),\n  defaultMeta: { service: 'calendar-mcp-server' },\n  transports: [\n    // Console transport for development\n    new winston.transports.Console({\n      format: winston.format.combine(\n        winston.format.colorize(),\n        winston.format.simple()\n      )\n    }),\n    // File transport for persistent logs\n    new winston.transports.File({ \n      filename: path.join(logDir, 'error.log'), \n      level: 'error' \n    }),\n    new winston.transports.File({ \n      filename: path.join(logDir, 'combined.log') \n    })\n  ]\n});\n\n// Create error handling utility\nexport class ErrorHandler {\n  static handleError(error: Error, context?: string): void {\n    logger.error({\n      message: error.message,\n      stack: error.stack,\n      context\n    });\n  }\n  \n  static createMCPError(message: string, code?: string): any {\n    return {\n      status: 'error',\n      error: {\n        message,\n        code: code || 'INTERNAL_ERROR'\n      }\n    };\n  }\n}\n```\n2. Implement custom error classes for different error types:\n   - `EventKitError` for EventKit-related errors\n   - `MCPProtocolError` for MCP protocol errors\n   - `ValidationError` for data validation errors\n3. Create middleware for error handling in the MCP server\n4. Implement graceful error recovery mechanisms\n5. Add detailed error reporting for debugging\n6. Create user-friendly error messages for common issues\n7. Implement error tracking and aggregation",
+        "testStrategy": "1. Unit tests for logger functionality\n2. Test error handling with various error scenarios\n3. Verify custom error classes work correctly\n4. Test error middleware with simulated errors\n5. Verify error recovery mechanisms\n6. Test log file creation and rotation\n7. Ensure sensitive information is not logged",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Custom Error Classes",
+            "description": "Create custom error classes for different error types in the system",
+            "dependencies": [],
+            "details": "Implement EventKitError for EventKit-related errors, MCPProtocolError for MCP protocol errors, and ValidationError for data validation errors. Each class should extend the base Error class and include additional properties for error codes and context-specific information.",
+            "status": "pending",
+            "testStrategy": "Write unit tests for each custom error class to ensure they capture and format error information correctly."
+          },
+          {
+            "id": 2,
+            "title": "Enhance Logging Utility",
+            "description": "Extend the existing logging utility to include more detailed information and log rotation",
+            "dependencies": [],
+            "details": "Add log rotation to the existing winston logger configuration. Implement log levels for different environments (development, staging, production). Include request IDs in log entries for better traceability. Add a method to sanitize sensitive information before logging.",
+            "status": "pending",
+            "testStrategy": "Test log rotation functionality, verify correct log levels are used in different environments, and ensure sensitive data is properly sanitized in log outputs."
+          },
+          {
+            "id": 3,
+            "title": "Create Error Handling Middleware",
+            "description": "Implement middleware for centralized error handling in the MCP server",
+            "dependencies": [
+              "8.1",
+              "8.2"
+            ],
+            "details": "Develop an Express middleware function that catches errors, logs them using the enhanced logging utility, and sends appropriate error responses. Handle different types of errors (custom errors, validation errors, unexpected errors) and format responses accordingly.",
+            "status": "pending",
+            "testStrategy": "Create integration tests with various error scenarios to ensure the middleware catches, logs, and responds to errors correctly."
+          },
+          {
+            "id": 4,
+            "title": "Implement Graceful Error Recovery",
+            "description": "Develop mechanisms for graceful error recovery in critical operations",
+            "dependencies": [
+              "8.3"
+            ],
+            "details": "Implement retry mechanisms for transient errors in EventKit operations. Create a circuit breaker pattern for external API calls. Develop a system for rolling back partial changes in case of errors during multi-step operations.",
+            "status": "pending",
+            "testStrategy": "Simulate various error conditions and verify that the system recovers gracefully. Test retry logic, circuit breaker functionality, and rollback mechanisms."
+          },
+          {
+            "id": 5,
+            "title": "Develop Error Reporting and Monitoring",
+            "description": "Create a system for aggregating errors and generating reports for monitoring",
+            "dependencies": [
+              "8.2",
+              "8.3",
+              "8.4"
+            ],
+            "details": "Implement an error aggregation system that collects error data from logs. Develop scripts to generate daily/weekly error reports. Create alerts for critical errors or error thresholds. Integrate with a monitoring service (e.g., Sentry, New Relic) for real-time error tracking.",
+            "status": "pending",
+            "testStrategy": "Test error aggregation by simulating various error scenarios. Verify report generation accuracy and alert triggering. Ensure proper integration with the chosen monitoring service."
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "NPX Package Configuration",
+        "description": "Configure the package for NPX compatibility to allow users to run the server directly with npx @unravellingtechnologies/calendar-mcp-server.",
+        "details": "1. Update package.json with bin configuration:\n```json\n{\n  \"name\": \"@unravellingtechnologies/calendar-mcp-server\",\n  \"version\": \"0.1.0\",\n  \"description\": \"MCP server for calendar integration with AI assistants\",\n  \"main\": \"dist/index.js\",\n  \"types\": \"dist/index.d.ts\",\n  \"bin\": {\n    \"calendar-mcp-server\": \"./dist/cli.js\"\n  },\n  \"files\": [\n    \"dist\",\n    \"README.md\",\n    \"LICENSE\"\n  ],\n  \"engines\": {\n    \"node\": \">=18.0.0\"\n  }\n}\n```\n2. Create a CLI entry point in `src/cli.ts`:\n```typescript\n#!/usr/bin/env node\nimport { CalendarMCPServer } from './server';\nimport { ToolRegistry } from './tools/registry';\nimport { logger } from './utils/logger';\nimport { parseArgs } from './utils/args-parser';\n\nasync function main() {\n  try {\n    // Parse command line arguments\n    const config = parseArgs(process.argv.slice(2));\n    \n    // Initialize server\n    const server = new CalendarMCPServer(config.port);\n    \n    // Register tools\n    const registry = new ToolRegistry(server);\n    registry.registerAllTools();\n    \n    // Start server\n    await server.start();\n    \n    logger.info(`Calendar MCP Server running on port ${config.port}`);\n    logger.info('Press Ctrl+C to stop the server');\n    \n    // Handle graceful shutdown\n    process.on('SIGINT', async () => {\n      logger.info('Shutting down server...');\n      await server.stop();\n      process.exit(0);\n    });\n  } catch (error) {\n    logger.error('Failed to start server:', error);\n    process.exit(1);\n  }\n}\n\nmain();\n```\n3. Implement command line argument parsing in `src/utils/args-parser.ts`\n4. Add shebang line to CLI entry point\n5. Configure proper file permissions for executable\n6. Create a build script that ensures the CLI file is executable\n7. Test NPX execution in different environments",
+        "testStrategy": "1. Test CLI argument parsing with various inputs\n2. Verify executable permissions are set correctly\n3. Test NPX execution on different platforms\n4. Verify server starts correctly when run via NPX\n5. Test graceful shutdown via Ctrl+C\n6. Verify help text and usage instructions\n7. Test error handling for invalid arguments",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          5,
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Update package.json configuration",
+            "description": "Modify the package.json file to include the necessary configurations for NPX compatibility.",
+            "dependencies": [],
+            "details": "Add 'bin' field to package.json, specifying the CLI entry point. Update 'files' array to include all necessary files for NPX execution. Ensure 'name', 'version', and other relevant fields are correctly set.",
+            "status": "pending",
+            "testStrategy": "Validate package.json structure using a JSON linter. Verify all required fields are present and correctly formatted."
+          },
+          {
+            "id": 2,
+            "title": "Create CLI entry point",
+            "description": "Implement the CLI entry point file that will be executed when the package is run via NPX.",
+            "dependencies": [
+              "9.1"
+            ],
+            "details": "Create src/cli.ts file. Implement main function to parse arguments, initialize server, register tools, and handle graceful shutdown. Add shebang line for Node.js execution.",
+            "status": "pending",
+            "testStrategy": "Run the CLI file directly to ensure it executes without errors. Test with various command-line arguments to verify proper parsing and execution."
+          },
+          {
+            "id": 3,
+            "title": "Implement command-line argument parsing",
+            "description": "Create a utility to parse command-line arguments for server configuration.",
+            "dependencies": [
+              "9.2"
+            ],
+            "details": "Implement src/utils/args-parser.ts to handle parsing of command-line arguments. Include options for port number, log level, and any other relevant configurations.",
+            "status": "pending",
+            "testStrategy": "Unit test the argument parser with various input combinations. Verify correct parsing of valid arguments and proper error handling for invalid inputs."
+          },
+          {
+            "id": 4,
+            "title": "Configure build process for NPX compatibility",
+            "description": "Update the build script to ensure proper file permissions and structure for NPX execution.",
+            "dependencies": [
+              "9.1",
+              "9.2"
+            ],
+            "details": "Modify build script to set executable permissions on the CLI file. Ensure all necessary files are included in the dist directory. Create a postbuild script if needed to handle NPX-specific requirements.",
+            "status": "pending",
+            "testStrategy": "Run the build process and verify the output structure. Check file permissions of the CLI file. Attempt to run the built package locally using NPX to ensure it works as expected."
+          },
+          {
+            "id": 5,
+            "title": "Test NPX execution in different environments",
+            "description": "Perform comprehensive testing of the package when executed via NPX in various environments.",
+            "dependencies": [
+              "9.1",
+              "9.2",
+              "9.3",
+              "9.4"
+            ],
+            "details": "Test NPX execution on different operating systems (Windows, macOS, Linux). Verify server starts correctly and can be interacted with. Test error handling and graceful shutdown via Ctrl+C.",
+            "status": "pending",
+            "testStrategy": "Create a test matrix covering different Node.js versions and operating systems. Use virtual machines or containers to test in isolated environments. Verify server functionality, logging, and error handling in each scenario."
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Calendar Management Tools Implementation",
+        "description": "Implement MCP tools for listing, selecting, and managing calendars in Apple Calendar.",
+        "details": "1. Create `src/tools/get-calendars.ts` to implement calendar listing tool:\n```typescript\nimport { MCPTool, MCPRequest, MCPResponse } from '@modelcontextprotocol/core';\nimport { EventKitService } from '../eventkit';\nimport { logger } from '../utils/logger';\n\nconst eventKitService = new EventKitService();\n\nconst getCalendarsSchema = {\n  type: 'object',\n  properties: {\n    includeReadOnly: { type: 'boolean', optional: true }\n  }\n};\n\nconst getCalendarsTool: MCPTool = {\n  name: 'get_calendars',\n  description: 'List available calendars',\n  schema: getCalendarsSchema,\n  execute: async (request: MCPRequest): Promise<MCPResponse> => {\n    try {\n      const { includeReadOnly = true } = request.params;\n      \n      // Get calendars from EventKit\n      let calendars = await eventKitService.getCalendars();\n      \n      // Filter read-only calendars if requested\n      if (!includeReadOnly) {\n        calendars = calendars.filter(cal => cal.allowsModifications);\n      }\n      \n      return {\n        status: 'success',\n        result: calendars\n      };\n    } catch (error) {\n      logger.error('Error fetching calendars:', error);\n      return {\n        status: 'error',\n        error: `Failed to fetch calendars: ${error.message}`\n      };\n    }\n  }\n};\n\nexport default getCalendarsTool;\n```\n2. Create `src/tools/get-calendar-details.ts` for fetching details about a specific calendar\n3. Implement calendar selection tool for setting default calendar\n4. Add support for calendar color management\n5. Implement calendar visibility toggling\n6. Create utility functions for calendar operations\n7. Add support for calendar type detection (local, subscribed, etc.)",
+        "testStrategy": "1. Unit tests with mocked EventKit service\n2. Test calendar filtering functionality\n3. Verify calendar detail retrieval\n4. Test default calendar selection\n5. Verify color management functionality\n6. Test visibility toggling\n7. Integration tests with actual EventKit on macOS",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement calendar selection tool",
+            "description": "Create a tool for setting the default calendar in Apple Calendar",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Develop src/tools/set-default-calendar.ts to implement the calendar selection functionality. Use the EventKitService to interact with Apple Calendar and update the default calendar setting.",
+            "status": "pending",
+            "testStrategy": "Unit test the tool with mocked EventKitService. Verify proper error handling for invalid calendar IDs. Integration test on macOS to confirm actual calendar changes."
+          },
+          {
+            "id": 2,
+            "title": "Add support for calendar color management",
+            "description": "Implement functionality to get and set calendar colors",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Create src/tools/manage-calendar-color.ts to handle getting and setting calendar colors. Implement color validation and conversion between different color formats (e.g., hex, RGB).",
+            "status": "pending",
+            "testStrategy": "Unit test color conversion and validation functions. Test the tool with mocked EventKitService. Verify color changes are reflected in the actual calendar on macOS."
+          },
+          {
+            "id": 3,
+            "title": "Implement calendar visibility toggling",
+            "description": "Create a tool to toggle the visibility of calendars",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Develop src/tools/toggle-calendar-visibility.ts to allow showing or hiding specific calendars. Use the EventKitService to update calendar visibility settings.",
+            "status": "pending",
+            "testStrategy": "Unit test the tool with mocked EventKitService. Verify proper handling of multiple calendars. Integration test on macOS to confirm visibility changes are applied correctly."
+          },
+          {
+            "id": 4,
+            "title": "Create utility functions for calendar operations",
+            "description": "Implement a set of utility functions for common calendar operations",
+            "dependencies": [],
+            "details": "Develop src/utils/calendar-utils.ts with functions for date manipulation, recurrence rule parsing, and other common calendar-related operations.",
+            "status": "pending",
+            "testStrategy": "Comprehensive unit tests for each utility function. Test edge cases and different input formats."
+          },
+          {
+            "id": 5,
+            "title": "Add support for calendar type detection",
+            "description": "Implement functionality to detect and categorize calendar types (local, subscribed, etc.)",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Enhance the existing calendar listing tool or create a new tool in src/tools/detect-calendar-type.ts to identify and categorize different types of calendars.",
+            "status": "pending",
+            "testStrategy": "Unit test with sample calendar data for different types. Integration test on macOS with various calendar configurations to ensure accurate type detection."
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Testing Suite Implementation",
+        "description": "Implement comprehensive testing suite with unit tests, integration tests, and EventKit mocks for non-macOS development.",
+        "details": "1. Set up Jest testing framework:\n```bash\nnpm install jest ts-jest @types/jest --save-dev\n```\n2. Create Jest configuration in `jest.config.js`:\n```javascript\nmodule.exports = {\n  preset: 'ts-jest',\n  testEnvironment: 'node',\n  roots: ['<rootDir>/src/', '<rootDir>/tests/'],\n  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],\n  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'],\n  coverageDirectory: 'coverage',\n  transform: {\n    '^.+\\\\.ts$': 'ts-jest'\n  },\n  moduleFileExtensions: ['ts', 'js', 'json', 'node']\n};\n```\n3. Create mock implementation of EventKit service for testing:\n```typescript\n// tests/mocks/eventkit-service.mock.ts\nimport { CalendarEvent, Calendar } from '../../src/models';\n\nexport class MockEventKitService {\n  private mockCalendars: Calendar[] = [\n    {\n      id: 'cal1',\n      title: 'Home',\n      color: '#FF0000',\n      type: 'local',\n      isVisible: true,\n      allowsModifications: true\n    },\n    {\n      id: 'cal2',\n      title: 'Work',\n      color: '#00FF00',\n      type: 'local',\n      isVisible: true,\n      allowsModifications: true\n    }\n  ];\n\n  private mockEvents: CalendarEvent[] = [\n    {\n      id: 'event1',\n      title: 'Team Meeting',\n      description: 'Weekly team sync',\n      startDate: new Date('2023-11-15T10:00:00'),\n      endDate: new Date('2023-11-15T11:00:00'),\n      isAllDay: false,\n      calendarId: 'cal2',\n      location: 'Conference Room A'\n    }\n  ];\n\n  async requestCalendarAccess(): Promise<boolean> {\n    return true;\n  }\n\n  async getCalendars(): Promise<Calendar[]> {\n    return [...this.mockCalendars];\n  }\n\n  async getEvents(startDate: Date, endDate: Date, calendarIds?: string[]): Promise<CalendarEvent[]> {\n    let events = [...this.mockEvents];\n    \n    // Filter by date range\n    events = events.filter(event => \n      event.startDate >= startDate && event.endDate <= endDate\n    );\n    \n    // Filter by calendar IDs if provided\n    if (calendarIds && calendarIds.length > 0) {\n      events = events.filter(event => \n        calendarIds.includes(event.calendarId)\n      );\n    }\n    \n    return events;\n  }\n\n  async createEvent(eventData: any): Promise<CalendarEvent> {\n    const newEvent: CalendarEvent = {\n      ...eventData,\n      id: `event${this.mockEvents.length + 1}`,\n      createdAt: new Date(),\n      updatedAt: new Date()\n    };\n    \n    this.mockEvents.push(newEvent);\n    return newEvent;\n  }\n}\n```\n4. Implement unit tests for core functionality\n5. Create integration tests for end-to-end testing\n6. Implement test utilities for common testing operations\n7. Set up CI/CD pipeline for automated testing",
+        "testStrategy": "1. Verify Jest configuration works correctly\n2. Test mock EventKit service with sample operations\n3. Run unit tests for core functionality\n4. Execute integration tests on macOS environment\n5. Verify test coverage meets minimum threshold\n6. Test CI/CD pipeline execution\n7. Ensure tests run correctly on different Node.js versions",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          3,
+          6,
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Unit Tests for Core Functionality",
+            "description": "Create unit tests for core functions and classes in the project",
+            "dependencies": [],
+            "details": "Write unit tests for key components such as CalendarMCPServer, ToolRegistry, and data models. Use Jest and the mock EventKit service to test individual functions and methods.",
+            "status": "pending",
+            "testStrategy": "Ensure each test focuses on a single unit of functionality. Use mocks and stubs where necessary to isolate the code being tested."
+          },
+          {
+            "id": 2,
+            "title": "Develop Integration Tests",
+            "description": "Create integration tests to verify the interaction between different components",
+            "dependencies": [
+              "11.1"
+            ],
+            "details": "Implement tests that cover the integration of multiple components, such as the MCP server with tool registration and event operations. Test end-to-end flows using the mock EventKit service.",
+            "status": "pending",
+            "testStrategy": "Focus on testing complete workflows and ensure that different components work together correctly. Use realistic test data and scenarios."
+          },
+          {
+            "id": 3,
+            "title": "Implement Test Utilities and Helpers",
+            "description": "Create utility functions and helper classes to support testing efforts",
+            "dependencies": [],
+            "details": "Develop reusable test utilities for common operations such as creating test data, mocking responses, and asserting on complex objects. Implement helpers for setting up and tearing down test environments.",
+            "status": "pending",
+            "testStrategy": "Ensure utilities are well-documented and easy to use. Test the utilities themselves to guarantee their reliability in test scenarios."
+          },
+          {
+            "id": 4,
+            "title": "Set Up CI/CD Pipeline for Automated Testing",
+            "description": "Configure a CI/CD pipeline to automatically run tests on code changes",
+            "dependencies": [
+              "11.1",
+              "11.2",
+              "11.3"
+            ],
+            "details": "Set up a CI/CD pipeline using a service like GitHub Actions or GitLab CI. Configure the pipeline to run all tests, generate coverage reports, and fail the build if tests don't pass or coverage thresholds aren't met.",
+            "status": "pending",
+            "testStrategy": "Test the CI/CD configuration itself by intentionally introducing failing tests and verifying that the pipeline responds correctly."
+          },
+          {
+            "id": 5,
+            "title": "Document Testing Procedures and Best Practices",
+            "description": "Create comprehensive documentation for the testing suite and processes",
+            "dependencies": [
+              "11.1",
+              "11.2",
+              "11.3",
+              "11.4"
+            ],
+            "details": "Write detailed documentation covering how to run tests, add new tests, and interpret results. Include best practices for writing effective tests and maintaining the test suite. Document the CI/CD process and how to troubleshoot common issues.",
+            "status": "pending",
+            "testStrategy": "Have team members review and follow the documentation to ensure it's clear and accurate. Update the documentation as the testing process evolves."
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Documentation and README",
+        "description": "Create comprehensive documentation including README, usage examples, API documentation, and troubleshooting guide.",
+        "details": "1. Create a detailed README.md with the following sections:\n   - Project overview and purpose\n   - Installation instructions\n   - Usage examples\n   - Available MCP tools and their parameters\n   - Configuration options\n   - Troubleshooting guide\n   - Contributing guidelines\n   - License information\n\n2. Generate API documentation using TypeDoc:\n```bash\nnpm install typedoc --save-dev\n```\n\n3. Add script to package.json for documentation generation:\n```json\n{\n  \"scripts\": {\n    \"docs\": \"typedoc --out docs src/index.ts\"\n  }\n}\n```\n\n4. Create usage examples for common scenarios:\n   - Setting up the server with Claude Desktop\n   - Creating calendar events\n   - Querying upcoming events\n   - Managing calendars\n\n5. Document known limitations and platform requirements\n\n6. Create troubleshooting section for common issues:\n   - Calendar permission problems\n   - Installation issues\n   - Connection problems with Claude Desktop\n\n7. Add developer documentation for contributing to the project\n\n8. Create changelog for tracking version history",
+        "testStrategy": "1. Verify README contains all required sections\n2. Test installation instructions on a fresh system\n3. Validate usage examples work as documented\n4. Check API documentation for completeness\n5. Review troubleshooting guide for common issues\n6. Ensure developer documentation is clear and complete\n7. Verify changelog follows proper format",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          9,
+          10
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create README.md",
+            "description": "Develop a comprehensive README.md file with all required sections",
+            "dependencies": [],
+            "details": "Create a detailed README.md including project overview, installation instructions, usage examples, available MCP tools and parameters, configuration options, troubleshooting guide, contributing guidelines, and license information.",
+            "status": "pending",
+            "testStrategy": "Review README.md for completeness and clarity, ensuring all required sections are present and well-documented."
+          },
+          {
+            "id": 2,
+            "title": "Generate API Documentation",
+            "description": "Set up and generate API documentation using TypeDoc",
+            "dependencies": [
+              "12.1"
+            ],
+            "details": "Install TypeDoc, add a script to package.json for documentation generation, and run the script to generate API documentation for the project.",
+            "status": "pending",
+            "testStrategy": "Verify that API documentation is generated correctly, covers all relevant components, and is easily navigable."
+          },
+          {
+            "id": 3,
+            "title": "Create Usage Examples",
+            "description": "Develop detailed usage examples for common scenarios",
+            "dependencies": [
+              "12.1",
+              "12.2"
+            ],
+            "details": "Create usage examples for setting up the server with Claude Desktop, creating calendar events, querying upcoming events, and managing calendars. Include code snippets and explanations for each scenario.",
+            "status": "pending",
+            "testStrategy": "Test each usage example to ensure it works as documented and provides clear guidance for users."
+          },
+          {
+            "id": 4,
+            "title": "Develop Troubleshooting Guide",
+            "description": "Create a comprehensive troubleshooting section for common issues",
+            "dependencies": [
+              "12.1",
+              "12.3"
+            ],
+            "details": "Develop a troubleshooting guide covering calendar permission problems, installation issues, connection problems with Claude Desktop, and other common issues. Include step-by-step solutions and potential workarounds.",
+            "status": "pending",
+            "testStrategy": "Review the troubleshooting guide for completeness and accuracy. Simulate common issues to verify the effectiveness of the provided solutions."
+          },
+          {
+            "id": 5,
+            "title": "Prepare Developer Documentation",
+            "description": "Create documentation for developers contributing to the project",
+            "dependencies": [
+              "12.1",
+              "12.2",
+              "12.3",
+              "12.4"
+            ],
+            "details": "Develop developer documentation including contribution guidelines, code style guide, pull request process, and instructions for setting up the development environment. Create a changelog for tracking version history.",
+            "status": "pending",
+            "testStrategy": "Have team members review the developer documentation for clarity and completeness. Test the development environment setup process using the provided instructions."
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-19T07:10:29.214Z",
+      "updated": "2025-09-19T08:54:22.650Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

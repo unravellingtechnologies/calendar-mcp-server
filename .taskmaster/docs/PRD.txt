@@ -1,0 +1,156 @@
+<context>
+# Overview  
+The Calendar MCP Server is a TypeScript-based Model Context Protocol (MCP) server that enables AI assistants like Claude to interact with calendar systems. The initial focus is on Apple Calendar integration via EventKit, providing AI agents with the ability to read, create, update, and manage calendar events seamlessly. This solves the problem of AI assistants being unable to access and manipulate calendar data, making them more useful for scheduling, planning, and time management tasks.
+
+# Core Features  
+## Apple Calendar Integration via EventKit
+- **What it does**: Connects to macOS/iOS EventKit framework to access Apple Calendar data
+- **Why it's important**: Provides direct access to the most widely used calendar system on Apple devices
+- **How it works**: Uses native EventKit APIs through Node.js bindings to read/write calendar events
+
+## MCP Protocol Implementation
+- **What it does**: Implements the Model Context Protocol specification for calendar operations
+- **Why it's important**: Ensures compatibility with Claude Desktop and other MCP-compatible AI tools
+- **How it works**: Exposes calendar functions as MCP tools that AI assistants can invoke
+
+## Basic Event Management
+- **What it does**: Provides CRUD operations for calendar events (create, read, update, delete)
+- **Why it's important**: Core functionality needed for any calendar management system
+- **How it works**: Maps MCP tool calls to EventKit operations with proper data validation
+
+## NPX Compatibility
+- **What it does**: Allows the server to be run directly with `npx @unravellingtechnologies/calendar-mcp-server`
+- **Why it's important**: Simplifies installation and usage for end users
+- **How it works**: Proper package.json configuration with executable entry point
+
+# User Experience  
+## User Personas
+- **AI-Assisted Professionals**: Users who want Claude to help manage their calendars, schedule meetings, and organize time
+- **Developers**: Those building MCP-compatible applications that need calendar integration
+- **Power Users**: Advanced users who want programmatic access to their calendar data through AI
+
+## Key User Flows
+1. **Installation**: User runs `npx @unravellingtechnologies/calendar-mcp-server` to start the server
+2. **Configuration**: Server connects to Claude Desktop via MCP configuration
+3. **Calendar Access**: User asks Claude to check calendar, create events, or manage schedule
+4. **Event Management**: Claude can read existing events, create new ones, modify or delete events
+
+## UI/UX Considerations
+- Server runs headlessly in the background
+- All interaction happens through Claude Desktop interface
+- Error messages should be clear and actionable
+- Calendar permissions must be properly requested and handled
+</context>
+
+<PRD>
+# Technical Architecture  
+## System Components
+- **MCP Server Core**: TypeScript-based server implementing MCP protocol
+- **EventKit Bridge**: Native bindings to macOS EventKit framework
+- **Tool Registry**: Registry of available MCP tools for calendar operations
+- **Data Serialization**: JSON serialization for MCP communication
+- **Error Handling**: Comprehensive error handling and logging
+
+## Data Models
+- **Event**: Title, description, start/end dates, location, attendees, calendar
+- **Calendar**: Name, identifier, color, type (local/subscribed)
+- **Recurrence**: Frequency, interval, end conditions for repeating events
+- **Attendee**: Name, email, status (pending/accepted/declined)
+
+## APIs and Integrations
+- **EventKit Framework**: Native macOS calendar API
+- **MCP Protocol**: Standardized AI-tool communication protocol
+- **Node.js Native Modules**: For EventKit binding
+- **Claude Desktop**: Primary client integration
+
+## Infrastructure Requirements
+- **Platform**: macOS (required for EventKit access)
+- **Node.js**: Version 18+ for modern JavaScript features
+- **TypeScript**: For type safety and better development experience
+- **Build System**: Standard npm/yarn build pipeline
+
+# Development Roadmap  
+## MVP Phase (Core Functionality)
+- Project scaffolding with TypeScript and MCP dependencies
+- Basic EventKit integration for reading calendar events
+- Core MCP server implementation with tool registration
+- Simple event creation and reading capabilities
+- Basic error handling and logging
+- NPX package configuration
+- Basic testing suite with EventKit mocks
+- Claude Desktop compatibility verification
+
+## Enhancement Phase (Future)
+- Full CRUD operations for events (update, delete)
+- Multiple calendar support
+- Recurring event management
+- Attendee management and invitations
+- Calendar subscription handling
+- Advanced search and filtering
+- Timezone handling improvements
+- Performance optimizations
+
+# Logical Dependency Chain
+## Foundation Layer (Must Build First)
+1. **Project Setup**: TypeScript configuration, build system, dependencies
+2. **MCP Server Framework**: Basic server structure implementing MCP protocol
+3. **EventKit Integration**: Native bindings to access Apple Calendar data
+
+## Core Functionality Layer (Build Upon Foundation)
+4. **Tool Registration**: Define and register MCP tools for calendar operations
+5. **Event Reading**: Implement ability to fetch and display calendar events
+6. **Event Creation**: Add capability to create new calendar events
+7. **Data Validation**: Ensure proper input validation and error handling
+
+## Integration Layer (Make It Work End-to-End)
+8. **NPX Configuration**: Package setup for easy installation and execution
+9. **Claude Desktop Integration**: Test and verify MCP compatibility
+10. **Basic Testing**: Unit tests and integration tests for core functionality
+
+## Polish Layer (Make It Production Ready)
+11. **Error Handling**: Comprehensive error management and user feedback
+12. **Documentation**: README, usage examples, troubleshooting guide
+13. **Package Publishing**: Prepare for npm publication
+
+# Risks and Mitigations  
+## Technical Challenges
+- **EventKit Binding Complexity**: Native module development can be complex
+  - *Mitigation*: Use existing EventKit bindings or well-documented native module patterns
+- **MCP Protocol Compliance**: Ensuring proper MCP implementation
+  - *Mitigation*: Follow official MCP documentation and test with Claude Desktop
+- **macOS-Only Limitation**: Server only works on macOS
+  - *Mitigation*: Clearly document platform requirements, plan cross-platform support for future
+
+## MVP Scope Management
+- **Feature Creep**: Risk of adding too many features before core functionality works
+  - *Mitigation*: Stick strictly to read/create operations for MVP
+- **EventKit Permission Issues**: Calendar access requires user permission
+  - *Mitigation*: Implement proper permission request handling and clear user instructions
+
+## Resource Constraints
+- **Native Module Complexity**: Building EventKit bindings from scratch is time-intensive
+  - *Mitigation*: Research existing solutions or use simpler file-based calendar access initially
+- **Testing on Different macOS Versions**: Ensuring compatibility across macOS versions
+  - *Mitigation*: Test on common macOS versions, document supported versions clearly
+
+# Appendix  
+## Research Findings
+- MCP servers follow a standard TypeScript pattern with tool registration
+- EventKit provides comprehensive calendar access but requires proper permissions
+- Claude Desktop uses MCP configuration in settings to connect to servers
+- NPX packages need proper bin configuration in package.json
+
+## Technical Specifications
+- **Package Name**: @unravellingtechnologies/calendar-mcp-server
+- **Entry Point**: `npx @unravellingtechnologies/calendar-mcp-server`
+- **MCP Protocol Version**: Latest stable version
+- **Node.js Version**: 18+
+- **Platform Support**: macOS (initial), future cross-platform support planned
+- **License**: To be determined
+- **Repository**: Private initially, consider open source later
+
+## Reference Implementation
+- Base structure and patterns from: https://github.com/modelcontextprotocol/servers/tree/main/src/everything
+- MCP protocol documentation and examples
+- EventKit documentation from Apple Developer resources
+</PRD>
