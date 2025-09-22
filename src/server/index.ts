@@ -3,9 +3,9 @@
  * Handles communication with Claude Desktop and other MCP-compatible clients
  */
 
-import { Server } from '@modelcontextprotocol/sdk/dist/esm/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/dist/esm/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/dist/esm/types.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { logger } from '../utils/logger.js';
 
 export interface CalendarMCPServerConfig {
@@ -18,7 +18,7 @@ export interface MCPTool {
 	name: string;
 	description: string;
 	inputSchema: object;
-	handler: (args: any) => Promise<any>;
+	handler: (_args: any) => Promise<any>;
 }
 
 export class CalendarMCPServer {

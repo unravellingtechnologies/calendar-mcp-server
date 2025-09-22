@@ -3,16 +3,32 @@ import { Logger, LogLevel, logger } from '../src/utils/logger';
 
 describe('Logger', () => {
 	let consoleSpy: any;
+	let stderrSpy: any;
+	let originalEnv: string | undefined;
 
 	beforeEach(() => {
+		// Mock environment variables to ensure we're not in MCP mode
+		originalEnv = process.env.NODE_ENV;
+		process.env.NODE_ENV = 'test';
+		
+		// Mock stdout.isTTY to false to trigger MCP mode detection
+		Object.defineProperty(process.stdout, 'isTTY', {
+			value: false,
+			writable: true,
+		});
+
 		consoleSpy = {
 			log: vi.spyOn(console, 'log').mockImplementation(() => {}),
 			error: vi.spyOn(console, 'error').mockImplementation(() => {}),
 		};
+
+		// Mock stderr.write since logger uses it in MCP mode
+		stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 	});
 
 	afterEach(() => {
 		vi.restoreAllMocks();
+		process.env.NODE_ENV = originalEnv;
 	});
 
 	describe('Logger class', () => {
@@ -29,32 +45,32 @@ describe('Logger', () => {
 		it('should log info messages at INFO level', () => {
 			const testLogger = new Logger({ level: LogLevel.INFO });
 			testLogger.info('Test message');
-			expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('[INFO] Test message'));
+			expect(stderrSpy).toHaveBeenCalledWith(expect.stringContaining('[INFO] Test message'));
 		});
 
 		it('should log error messages at INFO level', () => {
 			const testLogger = new Logger({ level: LogLevel.INFO });
 			testLogger.error('Test error');
-			expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('[ERROR] Test error'));
+			expect(stderrSpy).toHaveBeenCalledWith(expect.stringContaining('[ERROR] Test error'));
 		});
 
 		it('should not log debug messages at INFO level', () => {
 			const testLogger = new Logger({ level: LogLevel.INFO });
 			testLogger.debug('Debug message');
-			expect(consoleSpy.log).not.toHaveBeenCalled();
+			expect(stderrSpy).not.toHaveBeenCalled();
 		});
 
 		it('should log debug messages at DEBUG level', () => {
 			const testLogger = new Logger({ level: LogLevel.DEBUG });
 			testLogger.debug('Debug message');
-			expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('[DEBUG] Debug message'));
+			expect(stderrSpy).toHaveBeenCalledWith(expect.stringContaining('[DEBUG] Debug message'));
 		});
 
 		it('should format messages with data objects', () => {
 			const testLogger = new Logger({ level: LogLevel.INFO });
 			const testData = { key: 'value', number: 42 };
 			testLogger.info('Test with data', testData);
-			expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining(JSON.stringify(testData, null, 2)));
+			expect(stderrSpy).toHaveBeenCalledWith(expect.stringContaining(JSON.stringify(testData, null, 2)));
 		});
 
 		it('should allow changing log level', () => {
@@ -73,9 +89,8 @@ describe('Logger', () => {
 			testLogger.warn('Warn');
 			testLogger.error('Error');
 
-			expect(consoleSpy.log).not.toHaveBeenCalled();
-			expect(consoleSpy.error).toHaveBeenCalledOnce();
-			expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('[ERROR] Error'));
+			expect(stderrSpy).toHaveBeenCalledTimes(1);
+			expect(stderrSpy).toHaveBeenCalledWith(expect.stringContaining('[ERROR] Error'));
 		});
 	});
 
@@ -90,7 +105,7 @@ describe('Logger', () => {
 
 		it('should work with the default configuration', () => {
 			logger.info('Test default logger');
-			expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('[INFO] Test default logger'));
+			expect(stderrSpy).toHaveBeenCalledWith(expect.stringContaining('[INFO] Test default logger'));
 		});
 	});
 });

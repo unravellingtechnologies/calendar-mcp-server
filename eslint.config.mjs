@@ -15,7 +15,11 @@ export default tseslint.config(
       },
     },
     rules: {
-      'no-unused-vars': 'error',
+      'no-unused-vars': ['error', { 
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_',
+        'caughtErrorsIgnorePattern': '^_'
+      }],
       'no-undef': 'off', // TypeScript handles this
     },
   },

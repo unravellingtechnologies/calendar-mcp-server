@@ -3,12 +3,14 @@
  * Provides different log levels and formatting
  */
 
+/* eslint-disable no-unused-vars */
 export enum LogLevel {
 	DEBUG = 0,
 	INFO = 1,
 	WARN = 2,
 	ERROR = 3,
 }
+/* eslint-enable no-unused-vars */
 
 export interface LoggerConfig {
 	level: LogLevel;
@@ -66,10 +68,20 @@ class Logger {
 
 		const output = `${colorCode}${formattedMessage}${resetCode}`;
 
-		if (level >= LogLevel.ERROR) {
-			console.error(output);
+		// In MCP mode, log to stderr to avoid interfering with stdio protocol
+		// Check if we're likely running as an MCP server (no TTY and parent process exists)
+		const isMCPMode = !process.stdout.isTTY && process.env.NODE_ENV !== 'development';
+
+		if (isMCPMode) {
+			// Log to stderr in MCP mode to avoid protocol interference
+			process.stderr.write(output + '\n');
 		} else {
-			console.log(output);
+			// Normal logging to stdout/stderr
+			if (level >= LogLevel.ERROR) {
+				console.error(output);
+			} else {
+				console.log(output);
+			}
 		}
 	}
 
@@ -101,7 +113,7 @@ class Logger {
 // Create and export a default logger instance
 export const logger = new Logger({
 	level: process.env.NODE_ENV === 'development' ? LogLevel.DEBUG : LogLevel.INFO,
-	enableColors: process.env.NODE_ENV !== 'test',
+	enableColors: process.env.NODE_ENV !== 'test' && !process.env.MCP_MODE, // Disable colors in MCP mode
 	enableTimestamp: true,
 });
 

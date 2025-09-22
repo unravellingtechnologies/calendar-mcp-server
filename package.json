@@ -1,7 +1,7 @@
 {
   "name": "@unravellingtechnologies/calendar-mcp-server",
   "version": "0.1.0",
-  "description": "A TypeScript MCP server for managing Apple Calendar events via EventKit",
+  "description": "A TypeScript MCP server for managing calendar events via CalDAV",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
@@ -27,8 +27,8 @@
   "keywords": [
     "mcp",
     "calendar",
-    "eventkit",
-    "apple",
+    "caldav",
+    "icloud",
     "typescript"
   ],
   "author": "Unravelling Technologies",
@@ -38,9 +38,6 @@
     "pnpm": ">=8.0.0"
   },
   "packageManager": "pnpm@10.13.1",
-  "os": [
-    "darwin"
-  ],
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@types/node": "^24.5.2",
@@ -56,6 +53,9 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.18.1"
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "commander": "^14.0.1",
+    "ts-caldav": "^0.2.5",
+    "zod": "^4.1.9"
   }
 }
