@@ -6,10 +6,11 @@ A Model Context Protocol (MCP) server that provides calendar integration for Cla
 ## Features
 
 ### ✅ **Multi-Provider Calendar Support**
-- **iCloud Calendar** via CalDAV
-- **Google Calendar** (planned)
-- **Microsoft Exchange** (planned)
-- **Generic CalDAV servers** (supported)
+- **Apple Calendar (macOS)** via native EventKit integration. Provides access to **all** accounts synced with the macOS Calendar app (iCloud, Google, Exchange, etc.).
+- **iCloud Calendar** via CalDAV (cross-platform).
+- **Generic CalDAV servers** (cross-platform).
+- **Google Calendar** (planned).
+- **Microsoft Exchange** (planned).
 
 ### ✅ **MCP Tools Available**
 - `request_calendar_access` - Request permission to access calendar data
@@ -47,8 +48,15 @@ pnpm install
 ```
 
 ### Build the Project
+This command compiles the TypeScript source code.
 ```bash
 pnpm run build
+```
+
+### Build the Native Addon (macOS only)
+If you are on macOS and want to use the EventKit provider, you need to build the native C++ addon.
+```bash
+pnpm run build:addon
 ```
 
 ### Test the Calendar Functionality
@@ -96,10 +104,33 @@ pnpm test
    CALDAV_ENCRYPTION_KEY=your-encryption-key-here
    ```
 
+### Apple Calendar / EventKit Setup (macOS only)
+
+The EventKit provider offers direct access to the native macOS Calendar application, allowing you to see events from all accounts you have synced there (iCloud, Google, Exchange, etc.).
+
+**1. Build Prerequisites:**
+You must have the Xcode Command Line Tools installed. If you don't have them, run:
+```bash
+xcode-select --install
+```
+
+**2. Build the Addon:**
+Compile the native C++ module that communicates with EventKit.
+```bash
+pnpm run build:addon
+```
+
+**3. Enable the Provider:**
+You must explicitly enable the EventKit provider when running the server using one of the methods below.
+
 ## Usage
 
 ### Standalone Server
 ```bash
+# To use the EventKit provider (macOS only)
+node dist/index.js --enable-eventkit
+
+# To use the CalDAV provider (cross-platform)
 # With environment variables (recommended)
 node dist/index.js --caldav-provider=icloud --enable-caldav
 
@@ -114,6 +145,19 @@ node dist/index.js --caldav-provider=icloud --enable-caldav --log-level=debug
 
 Add to your `~/.claude_desktop_config.json`:
 
+```json
+{
+  "mcpServers": {
+    "calendar": {
+      "command": "node",
+      "args": ["/path/to/calendar-mcp-server/dist/index.js", "--enable-eventkit"],
+      "env": {}
+    }
+  }
+}
+```
+
+**For CalDAV:**
 ```json
 {
   "mcpServers": {
@@ -164,6 +208,8 @@ The server uses a provider-based architecture that abstracts calendar operations
 ### Technology Stack
 - **MCP SDK** - Model Context Protocol implementation
 - **TypeScript** - Type-safe development
+- **Node Addon API** - For building the native C++ EventKit bridge
+- **node-gyp** - For compiling the native addon
 - **ts-caldav** - CalDAV client library for cross-platform calendar access
 - **Zod** - Runtime type validation
 - **Commander.js** - Command-line interface
@@ -177,7 +223,10 @@ src/
 ├── server/                  # MCP server core
 ├── providers/               # Calendar provider implementations
 │   ├── CalendarProvider.ts  # Base provider interface
-│   └── CalDAVProvider.ts    # CalDAV implementation
+│   ├── CalDAVProvider.ts    # CalDAV implementation
+│   └── EventKitProvider.ts  # Native macOS EventKit provider
+├── native/                  # Native C++ source for EventKit
+│   └── eventkit.mm          # Objective-C++ implementation
 ├── tools/                   # MCP tool system
 ├── cli/                     # Command-line interface
 ├── config/                  # Configuration management
@@ -191,6 +240,9 @@ pnpm run clean
 
 # TypeScript compilation
 pnpm run build
+
+# Build the native addon (macOS only)
+pnpm run build:addon
 
 # Development build with watch
 pnpm run dev
@@ -232,10 +284,32 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "ge
 - Verify the build completed successfully: `pnpm run build`
 - Enable debug logging: `--log-level=debug`
 
+**❌ "No calendar providers configured" Warning**
+- This warning appears when neither CalDAV credentials nor EventKit are configured
+- **Solution 1**: Enable EventKit (macOS only): `--enable-eventkit`
+- **Solution 2**: Set CalDAV credentials via environment variables (see Setup section)
+- **Solution 3**: Use both EventKit and CalDAV for maximum compatibility
+
+**❌ EventKit Permission Issues in Claude Desktop**
+- EventKit permissions don't appear in System Preferences for MCP servers
+- **SOLUTION**: Run this command in Terminal to trigger the permission dialog:
+  ```bash
+  node /path/to/calendar-mcp-server/dist/index.js --enable-eventkit --request-permissions
+  ```
+- Grant permission when the macOS dialog appears
+- If permissions were previously denied, reset them first:
+  ```bash
+  tccutil reset Calendar
+  node /path/to/calendar-mcp-server/dist/index.js --enable-eventkit --request-permissions
+  ```
+
 ### Debug Mode
 ```bash
-# Enable comprehensive debugging
-node dist/index.js --caldav-provider=icloud --enable-caldav --log-level=debug --dev --verbose
+# Enable comprehensive debugging with EventKit
+node dist/index.js --enable-eventkit --log-level=debug --dev --verbose
+
+# Enable debugging with CalDAV credentials
+ICLOUD_CALDAV_USERNAME=your@icloud.com ICLOUD_CALDAV_PASSWORD=your-password node dist/index.js --log-level=debug --dev --verbose
 ```
 
 ## API Reference

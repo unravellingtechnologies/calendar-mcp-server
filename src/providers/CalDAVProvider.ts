@@ -215,18 +215,16 @@ export class CalDAVProvider extends CalendarProvider {
 						const eventEnd = new Date(event.end || event.start);
 						
 						if (eventEnd >= startDate && eventStart <= endDate) {
-							const startDateStr = event.start instanceof Date ? event.start.toISOString() : String(event.start);
-							const endDateStr = event.end instanceof Date ? event.end.toISOString() : String(event.end || event.start);
-							
 							const calendarEvent: CalendarEvent = {
 								id: event.uid || `${calendar.url}-${Date.now()}`,
 								title: event.summary || 'Untitled Event',
-								startDate: startDateStr,
-								endDate: endDateStr,
+								startDate: eventStart,
+								endDate: eventEnd,
 								calendarId: calendar.url || calendar.displayName || 'unknown',
 								notes: event.description,
 								location: event.location,
-								isAllDay: !startDateStr.includes('T'), // Simple check for all-day events
+								isAllDay: !(event.start instanceof Date && event.start.toISOString().includes('T')), // Simple check for all-day events
+                                attendees: [] // Attendee parsing not supported in this provider yet
 							};
 							allEvents.push(calendarEvent);
 						}

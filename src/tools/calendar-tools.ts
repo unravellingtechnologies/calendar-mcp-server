@@ -83,7 +83,7 @@ export function createCalendarTools(config: CalendarToolsConfig): MCPTool[] {
 	return [
 		{
 			name: 'request_calendar_access',
-			description: 'Request permission to access the user\'s calendar data.',
+			description: 'Request permission to access the user\'s calendar data. For EventKit, this will show a macOS permission dialog.',
 			inputSchema: {
 				type: 'object',
 				properties: {},
@@ -91,17 +91,51 @@ export function createCalendarTools(config: CalendarToolsConfig): MCPTool[] {
 			handler: async (): Promise<CalendarAccessResponse> => {
 				logger.info('Requesting calendar access');
 				try {
-					const granted = await providerManager.requestAccess();
-					return {
-						granted,
-						message: granted ? 'Calendar access granted' : 'Calendar access denied',
-						provider: providerManager.getDefaultProvider()?.getProviderInfo().displayName || 'Unknown',
-					};
-				} catch (_error) {
+					const provider = providerManager.getDefaultProvider();
+					if (!provider) {
+						return {
+							granted: false,
+							message: 'No calendar provider configured',
+							provider: 'None',
+						};
+					}
+
+					// For EventKit, provide specific guidance
+					if (provider.getProviderInfo().name === 'eventkit') {
+						const eventkitProvider = provider as any;
+						const authStatus = await eventkitProvider.getAuthorizationStatus();
+						
+						if (authStatus.hasAccess) {
+							return {
+								granted: true,
+								message: 'Calendar access already granted',
+								provider: 'EventKit',
+							};
+						}
+
+						// Try to request access
+						const granted = await eventkitProvider.requestAccess();
+						return {
+							granted,
+							message: granted 
+								? 'Calendar access granted via macOS permission dialog'
+								: 'Calendar access denied - user declined or no dialog appeared',
+							provider: 'EventKit',
+						};
+					} else {
+						// For other providers, use the standard method
+						const granted = await providerManager.requestAccess();
+						return {
+							granted,
+							message: granted ? 'Calendar access granted' : 'Calendar access denied',
+							provider: provider.getProviderInfo().displayName,
+						};
+					}
+				} catch (error) {
 					return {
 						granted: false,
-						message: 'Calendar access denied - no providers available',
-						provider: 'None',
+						message: 'Calendar access request failed: ' + (error instanceof Error ? error.message : 'Unknown error'),
+						provider: 'Unknown',
 					};
 				}
 			},
@@ -130,6 +164,76 @@ export function createCalendarTools(config: CalendarToolsConfig): MCPTool[] {
 						hasAccess: false,
 						provider: 'None',
 						message: 'Calendar access is not available - no providers configured',
+					};
+				}
+			},
+		},
+		{
+			name: 'get_detailed_authorization_status',
+			description: 'Get detailed authorization status information for EventKit provider, including specific permission states.',
+			inputSchema: {
+				type: 'object',
+				properties: {},
+			},
+			handler: async (): Promise<any> => {
+				logger.info('Getting detailed authorization status');
+				try {
+					const provider = providerManager.getDefaultProvider();
+					if (!provider) {
+						return {
+							error: 'No provider configured',
+							message: 'No calendar provider is currently configured'
+						};
+					}
+
+					// Check if it's EventKit provider
+					if (provider.getProviderInfo().name === 'eventkit') {
+						const eventkitProvider = provider as any; // Type assertion for EventKit-specific method
+						const authStatus = await eventkitProvider.getAuthorizationStatus();
+						
+						let message = '';
+						switch (authStatus.statusString) {
+							case 'authorized':
+								message = 'Calendar permissions are granted';
+								break;
+							case 'notDetermined':
+								message = 'Calendar permissions have not been requested yet';
+								break;
+							case 'denied':
+								message = 'Calendar permissions were denied by the user';
+								break;
+							case 'restricted':
+								message = 'Calendar permissions are restricted by system policy';
+								break;
+							default:
+								message = 'Unknown authorization status';
+								break;
+						}
+
+						return {
+							provider: 'EventKit',
+							status: authStatus.status,
+							statusString: authStatus.statusString,
+							hasAccess: authStatus.hasAccess,
+							message,
+							instructions: authStatus.hasAccess 
+								? 'Calendar access is available'
+								: 'To enable calendar access: Go to System Preferences > Security & Privacy > Privacy > Calendar and enable access for this application'
+						};
+					} else {
+						// For non-EventKit providers, return basic status
+						const hasAccess = await providerManager.hasAccess();
+						return {
+							provider: provider.getProviderInfo().displayName,
+							hasAccess,
+							message: hasAccess ? 'Provider access is available' : 'Provider access is not available',
+							note: 'Detailed authorization status is only available for EventKit provider'
+						};
+					}
+				} catch (error) {
+					return {
+						error: 'Failed to get authorization status',
+						message: error instanceof Error ? error.message : 'Unknown error'
 					};
 				}
 			},

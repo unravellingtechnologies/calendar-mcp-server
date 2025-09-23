@@ -32,6 +32,10 @@ export interface ServerArgs {
 	enableCalDAV?: boolean;
 	caldavUsername?: string;
 	caldavPassword?: string;
+	
+	// EventKit options
+	enableEventkit?: boolean;
+	requestPermissions?: boolean;
 }
 
 export interface CalDAVProviderConfig {
@@ -124,7 +128,9 @@ export class CLIParser {
 		this.program
 			.option('--log-level <level>', 'Logging level', 'info')
 			.option('--dev', 'Development mode', false)
-			.option('-v, --verbose', 'Verbose logging', false);
+			.option('-v, --verbose', 'Verbose logging', false)
+			.option('--enable-eventkit', 'Enable EventKit provider for macOS Calendar access')
+			.option('--request-permissions', 'Request EventKit permissions interactively (shows permission dialog)');
 
 		// Help examples
 		this.program.addHelpText('after', `
@@ -162,21 +168,31 @@ Setup Instructions:
 
 		// Detect available providers
 		const availableProviders = CLIParser.getAvailableProviders();
+		const eventkitEnabled = options.enableEventkit || process.env.EVENTKIT_ENABLED === 'true';
 		
-		if (availableProviders.length === 0) {
-			logger.warn('No CalDAV providers configured. Set environment variables for at least one provider:');
+		// Only warn about CalDAV if no providers are configured at all (including EventKit)
+		if (availableProviders.length === 0 && !eventkitEnabled) {
+			logger.warn('No calendar providers configured. Set environment variables for at least one provider:');
 			logger.warn('  iCloud:   ICLOUD_CALDAV_USERNAME and ICLOUD_CALDAV_PASSWORD');
 			logger.warn('  Google:   GOOGLE_CALDAV_USERNAME and GOOGLE_CALDAV_PASSWORD');
 			logger.warn('  Exchange: EXCHANGE_CALDAV_USERNAME and EXCHANGE_CALDAV_PASSWORD');
 			logger.warn('  Generic:  GENERIC_CALDAV_USERNAME and GENERIC_CALDAV_PASSWORD');
+			logger.warn('  Or enable EventKit: --enable-eventkit');
 		} else {
-			logger.info(`Found ${availableProviders.length} CalDAV provider(s): ${availableProviders.map(p => p.provider).join(', ')}`);
+			const providerList = [];
+			if (eventkitEnabled) providerList.push('EventKit');
+			if (availableProviders.length > 0) {
+				providerList.push(...availableProviders.map(p => `CalDAV-${p.provider}`));
+			}
+			logger.info(`Found ${providerList.length} calendar provider(s): ${providerList.join(', ')}`);
 		}
 
 		return {
 			logLevel: options.logLevel,
 			dev: options.dev,
 			verbose: options.verbose,
+			enableEventkit: options.enableEventkit,
+			requestPermissions: options.requestPermissions,
 		};
 	}
 

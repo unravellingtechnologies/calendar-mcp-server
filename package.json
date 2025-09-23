@@ -22,7 +22,8 @@
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "build:addon": "node-gyp rebuild"
   },
   "keywords": [
     "mcp",
@@ -40,12 +41,15 @@
   "packageManager": "pnpm@10.13.1",
   "devDependencies": {
     "@eslint/js": "^9.35.0",
+    "@types/bindings": "^1.5.5",
     "@types/node": "^24.5.2",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
     "@vitest/ui": "^3.2.4",
+    "bindings": "^1.5.0",
     "eslint": "^9.35.0",
     "globals": "^16.4.0",
+    "node-gyp": "^11.4.2",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
@@ -55,6 +59,8 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",
     "commander": "^14.0.1",
+    "node-addon-api": "^8.5.0",
+    "node-cache": "^5.1.2",
     "ts-caldav": "^0.2.5",
     "zod": "^4.1.9"
   }

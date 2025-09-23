@@ -5,10 +5,12 @@
 
 import { CalendarProvider, CalendarProviderInfo, Calendar, CalendarEvent, EventInput, CalendarProviderError } from './CalendarProvider.js';
 import { logger } from '../utils/logger.js';
+import { EventKitProvider } from './EventKitProvider.js';
 
 export interface ProviderManagerConfig {
 	defaultProvider?: string;
 	enabledProviders?: string[];
+	enableEventKit?: boolean;
 }
 
 export class CalendarProviderManager {
@@ -59,6 +61,45 @@ export class CalendarProviderManager {
 				'REGISTRATION_ERROR',
 				error instanceof Error ? error : undefined
 			);
+		}
+	}
+
+	/**
+	 * Register all providers based on configuration
+	 */
+	async registerProviders(): Promise<void> {
+		// Register default providers
+		if (this.config.defaultProvider) {
+			const defaultProvider = this.providers.get(this.config.defaultProvider);
+			if (defaultProvider) {
+				this.defaultProvider = defaultProvider;
+				logger.info('Set default calendar provider from config', { provider: this.config.defaultProvider });
+			} else {
+				logger.warn('Default provider not found in registered providers', { provider: this.config.defaultProvider });
+			}
+		}
+
+		// Register enabled providers
+		if (this.config.enabledProviders) {
+			for (const providerName of this.config.enabledProviders) {
+				const provider = this.providers.get(providerName);
+				if (provider) {
+					logger.info('Enabling provider from config', { provider: providerName });
+					// If a provider is already registered, ensure it's initialized
+					if (provider.getProviderInfo().name === this.config.defaultProvider) {
+						this.defaultProvider = provider;
+						logger.info('Set default calendar provider from enabled providers', { provider: providerName });
+					}
+				} else {
+					logger.warn('Attempted to enable unknown provider from config', { provider: providerName });
+				}
+			}
+		}
+
+		// Register EventKitProvider if enabled
+		const enableEventKit = process.env.EVENTKIT_ENABLED === 'true' || this.config.enableEventKit;
+		if (enableEventKit && process.platform === 'darwin') {
+			await this.registerProvider(new EventKitProvider());
 		}
 	}
 

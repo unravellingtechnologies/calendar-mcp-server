@@ -3,6 +3,8 @@
  * This abstraction allows supporting multiple calendar services (Apple Calendar, Outlook, Google Calendar, etc.)
  */
 
+import { Attendee, RecurrenceRule } from '../models/event.js';
+
 export interface Calendar {
 	id: string;
 	title: string;
@@ -14,14 +16,14 @@ export interface Calendar {
 export interface CalendarEvent {
 	id: string;
 	title: string;
-	startDate: string;
-	endDate: string;
+	startDate: Date;
+	endDate: Date;
 	notes?: string;
 	location?: string;
 	calendarId: string;
 	isAllDay?: boolean;
-	recurrenceRule?: string;
-	attendees?: string[];
+	recurrenceRule?: RecurrenceRule;
+	attendees?: Attendee[];
 }
 
 export interface EventInput {
@@ -31,8 +33,8 @@ export interface EventInput {
 	notes?: string;
 	location?: string;
 	isAllDay?: boolean;
-	recurrenceRule?: string;
-	attendees?: string[];
+	recurrenceRule?: RecurrenceRule;
+	attendees?: Attendee[];
 }
 
 export interface CalendarProviderInfo {
